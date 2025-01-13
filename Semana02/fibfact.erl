@@ -1,0 +1,21 @@
+-module(fibfact).
+-export([fib/1,fact/1]).
+
+fib(0) -> 1;
+fib(1) -> 1;
+fib(N) when (N>1) -> fib(N-1)+fib(N-2).
+
+% fib 0 = 1
+% fib 1 = 1
+% fib n | n>1 = fib(n-1)+fib(n-2)
+
+% def fib(n):
+%     if n==0 or n==1: return 1
+%     else:
+%	return fib(n-1)+fib(n-2)
+
+fact(0) -> 1;
+fact(N) when (N>0) -> N*fact(N-1).
+
+learn Haskell for great good
+learn Erlang for great good

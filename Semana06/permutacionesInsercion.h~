@@ -1,0 +1,2 @@
+perms [] = []
+  perms (a:bs)  = [(x:xs) | x <-(a:bs), xs <- delete x (x:xs)]]

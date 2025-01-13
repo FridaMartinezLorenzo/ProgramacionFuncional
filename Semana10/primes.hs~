@@ -1,0 +1,5 @@
+-- Del artículo de Cheng y van Emden, first (p. 7) es take.
+-- intsFrom(N) es [N..]
+primes = sieve [2..]
+sieve [] = []
+sieve (a:bs) = a:(sieve (filtrado  bs a))

@@ -1,0 +1,7 @@
+data Piezas = X | O | V deriving show
+
+data Tablero  = [Piezas]
+
+--- tablero podría ser take 9 (repeat V)
+
+inicio = take 9 (repeat V)

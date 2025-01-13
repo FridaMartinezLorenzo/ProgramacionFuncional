@@ -1,0 +1,51 @@
+alumnos@sc310:~/CursoPF/Semana04$ ghci
+GHCi, version 8.6.5: http://www.haskell.org/ghc/  :? for help
+Prelude> map sqr [1,2,3,4]
+
+<interactive>:1:5: error:
+    • Variable not in scope: sqr :: Integer -> b
+    • Perhaps you meant ‘sqrt’ (imported from Prelude)
+Prelude> map (\x -> x*x)  [1,2,3,4]
+[1,4,9,16]
+Prelude> map (\x -> x*x*x)  [1,2,3,4]
+[1,8,27,64]
+Prelude> map (\x -> x*x*x+1)  [1,2,3,4]
+[2,9,28,65]
+Prelude> map (2:) [[1,2],[2,3],[3,4]]
+[[2,1,2],[2,2,3],[2,3,4]]
+Prelude> map ('h':) ["ho","mo","nana"]
+["hho","hmo","hnana"]
+Prelude> map ("ho "++) ["ho","mo","nana"]
+["ho ho","ho mo","ho nana"]
+Prelude> map ord "homonana"
+
+<interactive>:8:5: error:
+    • Variable not in scope: ord :: Char -> b
+    • Perhaps you meant one of these:
+        ‘or’ (imported from Prelude), ‘odd’ (imported from Prelude)
+Prelude> :module Data.Char
+Prelude Data.Char> map ord "este es un mensaje secreto""
+
+<interactive>:10:38: error:
+    lexical error in string/character literal at end of input
+Prelude Data.Char> map ord "este es un mensaje secreto"
+[101,115,116,101,32,101,115,32,117,110,32,109,101,110,115,97,106,101,32,115,101,99,114,101,116,111]
+Prelude Data.Char> map (+1) (map ord "este es un mensaje secreto")
+[102,116,117,102,33,102,116,33,118,111,33,110,102,111,116,98,107,102,33,116,102,100,115,102,117,112]
+Prelude Data.Char> map chr (map (+1) (map ord "este es un mensaje secreto"))
+"ftuf!ft!vo!nfotbkf!tfdsfup"
+Prelude Data.Char> ord 'a'
+97
+Prelude Data.Char> chr 97
+'a'
+Prelude Data.Char> map chr (map (+1) (map ord "este es un mensaje secreto"))
+"ftuf!ft!vo!nfotbkf!tfdsfup"
+Prelude Data.Char> map ord (map chr (map (+1) (map ord "este es un mensaje secreto")))
+[102,116,117,102,33,102,116,33,118,111,33,110,102,111,116,98,107,102,33,116,102,100,115,102,117,112]
+Prelude Data.Char> map (\x -> x-1) (map ord (map chr (map (+1) (map ord "este es un mensaje secreto"))))
+[101,115,116,101,32,101,115,32,117,110,32,109,101,110,115,97,106,101,32,115,101,99,114,101,116,111]
+Prelude Data.Char> map chr $ map (\x -> x-1) (map ord (map chr (map (+1) (map ord "este es un mensaje secreto"))))
+"este es un mensaje secreto"
+Prelude Data.Char> map (chr . (\x -> x-1) . ord . chr . (+1) . ord) "este es un mensaje secreto"
+"este es un mensaje secreto"
+Prelude Data.Char> 

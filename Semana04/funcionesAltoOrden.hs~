@@ -1,0 +1,23 @@
+--- Sean A, B conjuntos.
+--- f: A -> B, (signatura, o flecha)
+--  a |-> f(a) (regla de correspondencia) (maps to)
+--- C, otro conjunto
+
+--- Funciones de alto orden (representativas):
+-- map
+-- filter
+-- foldr
+-- foldl
+-- scanl, scanr
+-- zipWith
+-- Funciones anònimas o lambda...
+
+-- map
+-- filter
+-- foldr,...
+-- foldl,..
+-- scanl, scanr
+-- zipWith
+-- Funciones anònimas o lambda...
+
+

@@ -1,0 +1,8 @@
+from Data.List import delete
+
+delete a [] = []
+delete a (b:ls) | a==b = ls
+delete a (b:ls) | a/=b = (b:delete a ls)
+
+perms [] = [[]]
+perms (a:bs) = [ (x:xs) | x<-(a:bs), xs <- perms (delete x (a:bs))]

@@ -1,0 +1,152 @@
+https://forms.gle/udmZo96wMib1qnvb9 (liGA A EXAMEN-ENCUESTA GOOGLE).
+¡Claro! A continuación te presento un examen de programación funcional que involucra el uso de las funciones map, filter y foldr (también conocida como fold right), con un nivel intermedio de dificultad. Este examen tiene ejercicios prácticos y preguntas teóricas para evaluar el conocimiento de estas funciones y su aplicación en el lenguaje funcional.
+Examen de Programación Funcional
+Instrucciones:
+
+    Responde cada pregunta y resuelve los ejercicios de manera eficiente utilizando funciones funcionales.
+    Puedes utilizar cualquier lenguaje funcional (Haskell, OCaml, Scala, etc.) o pseudocódigo funcional para las respuestas.
+    Asegúrate de que tu código sea claro y esté bien estructurado.
+
+Parte 1: Teoría
+
+Pregunta 1:
+¿Qué es la diferencia entre map, filter y foldr? Describe cómo funcionan estas funciones y en qué casos las utilizarías.
+
+Pregunta 2:
+Supongamos que tienes una lista de enteros. ¿Qué hace el siguiente código usando map y filter?
+
+map (*2) (filter even [1, 2, 3, 4, 5, 6])
+
+Explica paso a paso lo que hace este código y cuál sería el resultado.
+
+Pregunta 3:
+¿Qué sucede si usas foldr con una lista vacía? Proporciona un ejemplo de uso de foldr y cómo su comportamiento cambia dependiendo de si la lista está vacía o no.
+Parte 2: Ejercicios de Programación
+
+Ejercicio 1: Uso de map y filter
+Dada una lista de enteros, escribe una función que:
+
+    Elimine los números impares de la lista.
+    Doble el valor de los números pares restantes.
+
+Ejemplo de entrada: [1, 2, 3, 4, 5, 6]
+Ejemplo de salida esperada: [4, 8, 12]
+
+Ejercicio 2: Uso de foldr
+Dada una lista de cadenas de texto, escribe una función que concatene las cadenas en la lista, separadas por un guion ("-"). Usa foldr para resolverlo.
+
+Ejemplo de entrada: ["Hola", "Mundo", "Functional", "Programming"]
+Ejemplo de salida esperada: "Hola-Mundo-Functional-Programming"
+
+Ejercicio 3: Combinación de map, filter y foldr
+Escribe una función que reciba una lista de enteros y:
+
+    Filtre los números negativos.
+    Duplica los números restantes.
+    Sume todos los valores resultantes usando foldr.
+
+Ejemplo de entrada: [-1, 2, -3, 4, 5]
+Ejemplo de salida esperada: 24 (porque 22 + 42 + 5*2 = 24)
+
+Ejercicio 4: Cálculo de la suma de los cuadrados de los números pares
+Escribe una función que calcule la suma de los cuadrados de los números pares en una lista. Debes usar filter para seleccionar los números pares y map para elevarlos al cuadrado.
+
+Ejemplo de entrada: [1, 2, 3, 4, 5, 6]
+Ejemplo de salida esperada: 56 (porque 2^2 + 4^2 + 6^2 = 4 + 16 + 36 = 56)
+Parte 3: Pregunta Extra (Opcional)
+
+Pregunta Extra 1:
+¿En qué casos sería más eficiente usar foldl en lugar de foldr? Explica los pros y contras de ambos en términos de eficiencia y cuándo es adecuado usar uno sobre el otro.
+
+¡Buena suerte!
+Al enviar un mensaje a ChatGPT, aceptas nuestras condiciones y confirmas que has leído nuestra política de privacidad.
+No compartas información confidencial. Los chats pueden ser revisados y usados para formar a nuestros modelos. Obtener más información
+
+Examen de Programación Funcional: Listas
+Instrucciones:
+
+    Responde todas las preguntas y resuelve los ejercicios de manera eficiente utilizando funciones funcionales.
+    Puedes usar cualquier lenguaje funcional (Haskell, OCaml, Scala, etc.) o pseudocódigo funcional.
+    Asegúrate de que tu código sea claro, bien estructurado y que utilice las funciones estándar de programación funcional.
+
+Parte 1: Teoría
+
+Pregunta 1:
+Explica brevemente qué es una lista en programación funcional. ¿Cuál es la diferencia entre una lista inmutable y mutable? Proporciona un ejemplo en pseudocódigo o un lenguaje funcional de cómo se construye una lista y cómo se accede a sus elementos.
+
+Pregunta 2:
+En programación funcional, se suelen usar funciones como map, filter y foldr para operar sobre listas. Explica el comportamiento de cada una de estas funciones con ejemplos.
+
+    map: ¿Cómo transforma una lista?
+    filter: ¿Cómo filtra una lista?
+    foldr: ¿Cómo reduce una lista a un solo valor?
+
+Pregunta 3:
+Imagina que tienes una lista de listas de enteros (una lista de listas). ¿Cómo podrías "aplanar" esta lista usando funciones de programación funcional? Escribe una posible solución.
+Parte 2: Ejercicios de Programación
+
+Ejercicio 1: Manipulación Básica de Listas
+Escribe una función que tome una lista de enteros y devuelva una nueva lista con los elementos que son mayores a 10. Usa la función filter.
+
+Ejemplo de entrada: [5, 12, 18, 3, 7, 20]
+Ejemplo de salida esperada: [12, 18, 20]
+
+Ejercicio 2: Aplicación de map y filter
+Escribe una función que reciba una lista de enteros y:
+
+    Elimine los números negativos.
+    Doble el valor de los números restantes.
+
+Ejemplo de entrada: [-1, 2, -3, 4, 5]
+Ejemplo de salida esperada: [4, 8, 10]
+
+Ejercicio 3: Uso de foldr
+Escribe una función que calcule la suma de los cuadrados de todos los elementos en una lista utilizando foldr.
+
+Ejemplo de entrada: [1, 2, 3, 4]
+Ejemplo de salida esperada: 30 (porque 1² + 2² + 3² + 4² = 1 + 4 + 9 + 16 = 30)
+
+Ejercicio 4: Desempaquetado y Transformación de Listas
+Escribe una función que tome una lista de tuplas de la forma (int, int) y devuelva una lista con la suma de los valores de cada tupla.
+
+Ejemplo de entrada: [(1, 2), (3, 4), (5, 6)]
+Ejemplo de salida esperada: [3, 7, 11]
+
+Ejercicio 5: Lista de Pares
+Escribe una función que reciba una lista de enteros y devuelva una nueva lista con los números que son múltiplos de 3 y 5.
+
+Ejemplo de entrada: [1, 3, 5, 10, 15, 20, 30]
+Ejemplo de salida esperada: [15, 30]
+
+Ejercicio 6: Combinación de map, filter y foldr
+Escribe una función que reciba una lista de enteros y:
+
+    Filtre los números negativos.
+    Duplica los números restantes.
+    Sume todos los valores resultantes usando foldr.
+
+Ejemplo de entrada: [-1, 2, -3, 4, 5]
+Ejemplo de salida esperada: 24 (porque 22 + 42 + 5*2 = 24)
+Parte 3: Preguntas Avanzadas
+
+Pregunta 1:
+Supón que tienes una lista de listas de enteros y deseas combinar todas las listas en una sola, pero solo si todos los elementos de cada lista son mayores a un cierto valor. Escribe una función que lo haga utilizando map y filter. Por ejemplo, si el valor es 5, las listas [6, 7] y [8, 9] pasarían el filtro, pero [2, 3] no.
+
+Pregunta 2:
+Escribe una función recursiva que calcule el máximo de una lista de números enteros sin utilizar funciones estándar como maximum. Explica cómo la recursión ayuda a resolver el problema.
+
+Pregunta 3:
+Imagina que tienes una lista de cadenas de texto y deseas verificar si alguna de las cadenas tiene más de 10 caracteres. Escribe una función que use any o su equivalente para verificar si alguna cadena cumple con esta condición.
+Parte 4: Pregunta Extra (Opcional)
+
+Pregunta Extra 1:
+¿Cuál es la diferencia entre una lista perezosa (lazy list) y una lista estricta? Explica cómo la evaluación perezosa podría beneficiarte al trabajar con listas grandes o infinitas, y proporciona un ejemplo donde una lista perezosa sea útil.
+Sugerencia de Evaluación:
+
+    La parte teórica ayuda a verificar el entendimiento general de las listas y cómo se utilizan funciones como map, filter y foldr.
+    Los ejercicios prácticos ponen a prueba la capacidad de manipular listas mediante estas funciones y su combinación.
+    Las preguntas avanzadas y opcionales desafían al estudiante a pensar más profundamente sobre la manipulación eficiente de listas y técnicas más complejas, como la recursión.
+
+¡Buena suerte con el examen!
+
+

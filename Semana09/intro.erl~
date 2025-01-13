@@ -1,0 +1,5 @@
+-module(intro).
+
+-export([start/0]).
+
+start() -> io:format("hola mundo~p",[]). 

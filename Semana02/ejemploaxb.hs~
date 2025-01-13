@@ -1,0 +1,11 @@
+
+
+data ColorC = Blanco | Amarillo | Rojo deriving Show
+data ColorF = Negro | Azul | Verde | Violeta deriving Show
+data EstadoA = Triste | Enojado  | Cumbiambero | Alegre deriving Show
+
+combinar :: (ColorC, ColorF) -> EstadoA
+combinar (Amarillo, Verde) = Cumbiambero
+combinar (Rojo, Azul) = Enojado
+combinar (Blanco, Azul) = Triste
+

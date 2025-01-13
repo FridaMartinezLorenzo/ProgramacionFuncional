@@ -1,0 +1,8 @@
+
+cuadradp:: Int -> Int
+cuadrado x = x*x
+
+sumaUn :: Int -> In
+sumaUno y = y + 1
+
+valAbsoluto a = if a > 0 then a else (-a)
