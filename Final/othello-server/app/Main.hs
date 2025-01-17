@@ -1,12 +1,25 @@
-module Othello where
+
+import Web.Scotty
+import Data.Aeson (ToJSON, toJSON, Value(..), object)
+
+import Data.Text.Lazy (Text)
+import Control.Monad.IO.Class (liftIO)
+import Data.Char
+import Data.List
+import Text.Read (readMaybe)
+
 import System.IO (hFlush, stdout)
 import Data.List (intercalate)
 import Debug.Trace (trace)
 
+instance ToJSON TipoCuadrado where
+    toJSON E = String "E"
+    toJSON B = String "B"
+    toJSON N = String "N"
 
-import Data.Char
-import Data.List
-import Text.Read (readMaybe)
+-- Convierte el tablero a un formato JSON
+tableroToJSON :: [(Int, TipoCuadrado)] -> Value
+tableroToJSON tablero = toJSON $ map (\(pos, tipo) -> object [("pos", toJSON pos), ("tipo", toJSON tipo)]) tablero
 
 data TipoCuadrado = E | B | N deriving (Eq, Show) -- Empty, Blanco, Negro
 data Jugador = JugadorBlanco | JugadorNegro deriving (Eq, Show)
@@ -190,10 +203,6 @@ mejorJugada :: [Int] -> Int
 mejorJugada posiblesTiradas =
   snd $ maximum [(evaluarJugada pos, pos) | pos <- posiblesTiradas]
 
--- Función principal del juego
-main :: IO ()
-main = do
-  juego tableroInicial N -- Empieza el juego con la ficha Negra (N)
 
 -- Función que maneja el juego en sí, alternando entre jugadores
 juego :: [(Int, TipoCuadrado)] -> TipoCuadrado -> IO ()
@@ -243,3 +252,17 @@ juego tablero tipo = do
                             let nuevoTablero = ejecutarTirada posSeleccionada tablero tipo
                             let siguienteJugador = getOpuesto tipo
                             juego nuevoTablero siguienteJugador
+
+
+
+-- Función principal de juego
+main :: IO ()
+main = scotty 3000 $ do
+    post "/play" $ do
+        pos <- param "pos" :: ActionM Int
+        let tipoJugador = N  -- Suponiendo que el jugador siempre es Negro
+        let nuevoTablero = ejecutarTirada pos tableroInicial tipoJugador
+        json $ tableroToJSON nuevoTablero
+
+    get "/board" $ do
+        json $ tableroToJSON tableroInicial
