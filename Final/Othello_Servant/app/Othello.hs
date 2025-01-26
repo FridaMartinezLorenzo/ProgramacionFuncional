@@ -210,6 +210,37 @@ mejorJugada :: [Int] -> Int
 mejorJugada posiblesTiradas =
   snd $ maximum [(evaluarJugada pos, pos) | pos <- posiblesTiradas]
 
+-- Función para que la computadora elija la posición que ha de jugar
+elegirJugadaComputadora :: [(Int, TipoCuadrado)] -> TipoCuadrado -> IO Int
+elegirJugadaComputadora tablero tipo = do
+  putStrLn "La computadora (Blanco) está calculando su jugada..."
+  let posibles = posiblesTiradas tipo tablero  -- Obtener todas las posibles jugadas
+      posiblesValidas = filter (\pos -> puedeEncerrar pos tipo tablero) posibles  -- Filtrar las jugadas válidas
+  if null posiblesValidas
+    then do
+      putStrLn "La computadora no tiene jugadas válidas. Pasa el turno."
+      return (-1)  -- Devolver -1 para indicar que no hay jugadas válidas
+    else do
+      let posSeleccionada = mejorJugada posiblesValidas  -- Elegir la mejor jugada válida
+      putStrLn $ "La computadora (Blanco) elige la posición: " ++ show posSeleccionada
+      return posSeleccionada  -- Devolver la posición seleccionada
+      
+--Funcion para que se realice la jugada de la computadora
+---realizarJugadaComputadora :: [(Int, TipoCuadrado)] -> TipoCuadrado -> IO [(Int, TipoCuadrado)]
+---realizarJugadaComputadora tablero tipo = do
+---  putStrLn "La computadora (Blanco) está calculando su jugada..."
+---  let posibles = posiblesTiradas tipo tablero
+---      posiblesValidas = filter (\pos -> puedeEncerrar pos tipo tablero) posibles
+---  if null posiblesValidas
+---    then do
+---      putStrLn "La computadora no tiene jugadas válidas. Pasa el turno."
+---      return tablero  -- No hay cambios en el tablero
+---    else do
+---      let posSeleccionada = mejorJugada posiblesValidas  -- Elegir la mejor jugada válida
+---      putStrLn $ "La computadora (Blanco) elige la posición: " ++ show posSeleccionada
+---      return (ejecutarTirada posSeleccionada tablero tipo)  -- Ejecutar la jugada y devolver el nuevo tablero
+
+
 -- Función principal del juego
 --main :: IO ()
 --main = do

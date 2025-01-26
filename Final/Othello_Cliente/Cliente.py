@@ -1,6 +1,3 @@
-
-import pygame
-
 import requests
 
 # URL base del servidor Haskell
@@ -46,13 +43,22 @@ def mostrar_tablero(tablero_str):
 def obtener_posibles_tiradas(jugador):
     """Obtiene las posibles tiradas para un jugador desde el servidor."""
     try:
-        data = {"jugador": jugador}
         response = requests.post(f"{BASE_URL}/posibles_tiradas", json=jugador)
         response.raise_for_status()  # Lanza una excepción si la respuesta no es 200
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error al obtener las posibles tiradas: {e}")
     return []
+
+def realizar_jugada_computadora():
+    """Realiza la jugada de la computadora en el servidor."""
+    try:
+        response = requests.post(f"{BASE_URL}/jugada_computadora")
+        response.raise_for_status()  # Lanza una excepción si la respuesta no es 200
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error al realizar la jugada de la computadora: {e}")
+        return None
 
 def jugar():
     """Función principal para manejar el juego."""
@@ -104,7 +110,7 @@ def jugar():
                 print("Entrada no válida. Introduce un número.")
         else:  # Turno de la computadora (B)
             print("La computadora (B) está calculando su jugada...")
-            estado = realizar_jugada(-1, "B")  # El servidor Haskell elige la mejor jugada
+            estado = realizar_jugada_computadora()  # Llamar al endpoint específico para la jugada de la computadora
             if not estado:
                 print("Error al realizar la jugada de la computadora. Saliendo...")
                 break
