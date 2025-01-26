@@ -1,116 +1,155 @@
+
 import pygame
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-import numpy as np
-from math import cos, sin
 
-import requests 
+import requests
 
-#Funciones del servidor# Función para obtener el estado actual del juego desde el servidor
+# URL base del servidor Haskell
+BASE_URL = "http://localhost:8080"
+
 def obtener_estado():
-    url = "http://localhost:8080/estado"
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        tablero_servidor = data["tableroActual"]
-        tablero_matriz = convertir_a_matriz(tablero_servidor)
-        return tablero_matriz, data["turnoJugador"]
-    return None, None
+    """Obtiene el estado actual del tablero y el turno."""
+    try:
+        response = requests.get(f"{BASE_URL}/estado")
+        response.raise_for_status()  # Lanza una excepción si la respuesta no es 200
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error al obtener el estado del tablero: {e}")
+        return None
 
+def realizar_jugada(posicion, jugador):
+    """Realiza una jugada en el servidor."""
+    try:
+        data = {"posicion": posicion, "jugador": jugador}
+        response = requests.post(f"{BASE_URL}/jugada", json=data)
+        response.raise_for_status()  # Lanza una excepción si la respuesta no es 200
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error al realizar la jugada: {e}")
+        return None
 
+def reiniciar_tablero():
+    """Reinicia el tablero en el servidor."""
+    try:
+        response = requests.post(f"{BASE_URL}/reiniciar")
+        response.raise_for_status()  # Lanza una excepción si la respuesta no es 200
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error al reiniciar el tablero: {e}")
+        return None
 
-# Función para hacer una jugada en el servidor
-def realizar_jugada(pos, jugador):
-    url = "http://localhost:8080/jugada"
-    data = {"posicion": pos, "jugador": jugador}
-    response = requests.post(url, json=data)
-    if response.status_code == 200:
-        data = response.json()
-        return data["tableroActual"], data["turnoJugador"]
-    return None, None
+def mostrar_tablero(tablero_str):
+    """Muestra el tablero en formato legible."""
+    filas = tablero_str.split("\n")
+    for fila in filas:
+        print(fila)
 
-#Graficos
+def obtener_posibles_tiradas(jugador):
+    """Obtiene las posibles tiradas para un jugador desde el servidor."""
+    try:
+        data = {"jugador": jugador}
+        response = requests.post(f"{BASE_URL}/posibles_tiradas", json=jugador)
+        response.raise_for_status()  # Lanza una excepción si la respuesta no es 200
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error al obtener las posibles tiradas: {e}")
+    return []
 
+def jugar():
+    """Función principal para manejar el juego."""
+    print("Reiniciando el tablero...")
+    reiniciar_tablero()  # Reiniciar el tablero al inicio
+
+    while True:
+        print("\nObteniendo estado del tablero...")
+        estado = obtener_estado()
+
+        if not estado:
+            print("No se pudo obtener el estado del tablero. Saliendo...")
+            break
+
+        tablero_actual = estado["tableroActual"]
+        turno_jugador = estado["turnoJugador"]
+
+        print("\nTablero actual:")
+        mostrar_tablero(tablero_actual)
+
+        if "No es tu turno" in turno_jugador or "Movimiento inválido" in turno_jugador:
+            print(turno_jugador)
+            continue  # Este ciclo se sigue ejecutando si no es el turno del jugador
+
+        print(f"Turno de: {turno_jugador}")
+
+        if turno_jugador == "N":  # Turno del jugador humano
+            # Obtener las posibles tiradas para el jugador humano
+            posibles_tiradas = obtener_posibles_tiradas("N")
+            if not posibles_tiradas:
+                print("No hay jugadas posibles para el jugador Negro. Pasando turno...")
+                estado = realizar_jugada(-1, "N")  # Pasar turno
+                if not estado:
+                    print("Error al pasar el turno. Saliendo...")
+                    break
+                continue  # Aquí se asegurará de que el ciclo siga con el turno de la otra persona
+
+            print("Posibles tiradas:", posibles_tiradas)
+            try:
+                posicion = int(input("Selecciona una posición para hacer tu jugada (número de casilla): "))
+                if posicion not in posibles_tiradas:
+                    print("Posición no válida. Intenta nuevamente.")
+                    continue
+                estado = realizar_jugada(posicion, "N")
+                if not estado:
+                    print("Error al realizar la jugada. Saliendo...")
+                    break
+            except ValueError:
+                print("Entrada no válida. Introduce un número.")
+        else:  # Turno de la computadora (B)
+            print("La computadora (B) está calculando su jugada...")
+            estado = realizar_jugada(-1, "B")  # El servidor Haskell elige la mejor jugada
+            if not estado:
+                print("Error al realizar la jugada de la computadora. Saliendo...")
+                break
+
+        # Verificar si el juego ha terminado
+        if "Ganador" in estado["turnoJugador"]:
+            print(estado["turnoJugador"])
+            break
+
+if __name__ == "__main__":
+    jugar()
+
+#Graficos ____________________________________________________________________________________________________________-----
 # Colores
-NEGRO = (0.0, 0.0, 0.0)
-BLANCO = (1.0, 1.0, 1.0)
-VACIO = (0.5, 0.5, 0.5)
-VERDE = (0.0, 0.5, 0.0)
+NEGRO = (0, 0, 0)
+BLANCO = (255, 255, 255)
+VACIO = (128, 128, 128)
+VERDE = (0, 128, 0)
 
 # Dimensiones del tablero
 TAM_TABLERO = 8
-TAM_CASILLA = 1.0
-INICIO_X = -4.0
-INICIO_Y = -4.0
+TAM_CASILLA = 50  # Tamaño de cada casilla en píxeles
+INICIO_X = 100
+INICIO_Y = 100
 
-def dibujar_casilla(x, y):
+
+def dibujar_casilla(screen, x, y):
     """Dibuja una casilla verde con contorno."""
-    glColor3f(*VERDE)
-    glBegin(GL_QUADS)
-    glVertex2f(x, y)
-    glVertex2f(x + TAM_CASILLA, y)
-    glVertex2f(x + TAM_CASILLA, y + TAM_CASILLA)
-    glVertex2f(x, y + TAM_CASILLA)
-    glEnd()
+    pygame.draw.rect(screen, VERDE, (x, y, TAM_CASILLA, TAM_CASILLA))
+    pygame.draw.rect(screen, NEGRO, (x, y, TAM_CASILLA, TAM_CASILLA), 1)
 
-    # Dibujar el contorno (grid)
-    glColor3f(0, 0, 0)  # Color del grid (negro)
-    glBegin(GL_LINE_LOOP)
-    glVertex2f(x, y)
-    glVertex2f(x + TAM_CASILLA, y)
-    glVertex2f(x + TAM_CASILLA, y + TAM_CASILLA)
-    glVertex2f(x, y + TAM_CASILLA)
-    glEnd()
 
-def dibujar_pieza(x, y, color):
+def dibujar_pieza(screen, x, y, color):
     """Dibuja una pieza circular en el tablero."""
-    glColor3f(*color)
-    glBegin(GL_POLYGON)
-    for i in range(36):
-        angulo = 2 * 3.14159 * i / 36
-        glVertex2f(x + 0.4 * TAM_CASILLA * cos(angulo), y + 0.4 * TAM_CASILLA * sin(angulo))
-    glEnd()
+    pygame.draw.circle(screen, color, (x + TAM_CASILLA // 2, y + TAM_CASILLA // 2), TAM_CASILLA // 2 - 5)
 
-def dibujar_tablero(tablero):
+
+def dibujar_tablero(screen, tablero):
     """Dibuja el tablero con todas las casillas y piezas."""
     for i in range(TAM_TABLERO):
         for j in range(TAM_TABLERO):
             x = INICIO_X + j * TAM_CASILLA
             y = INICIO_Y + i * TAM_CASILLA
-            dibujar_casilla(x, y)  # Dibujar casilla verde con grid
+            dibujar_casilla(screen, x, y)  # Dibujar casilla verde con grid
             if tablero[i][j] != VACIO:  # Si hay pieza, dibujarla
-                dibujar_pieza(x + TAM_CASILLA / 2, y + TAM_CASILLA / 2, tablero[i][j])
+                dibujar_pieza(screen, x, y, tablero[i][j])
 
-def init():
-    """Inicializa Pygame y OpenGL."""
-    pygame.init()
-    display = (800, 600)
-    pygame.display.set_mode(display, pygame.DOUBLEBUF | pygame.OPENGL)
-    gluOrtho2D(-5, 5, -5, 5)  # Define el espacio de coordenadas 2D
-    glClearColor(1, 1, 1, 1)  # Color de fondo blanco
 
-def main():
-    """Función principal para mostrar el tablero."""
-    init()
-    tablero_prueba = [
-        [VACIO, NEGRO, BLANCO, VACIO, VACIO, BLANCO, NEGRO, VACIO],
-        [VACIO] * 8,
-        [VACIO] * 8,
-        [VACIO] * 8,
-        [VACIO] * 8,
-        [VACIO] * 8,
-        [VACIO] * 8,
-        [VACIO, BLANCO, VACIO, NEGRO, VACIO, NEGRO, BLANCO, VACIO],
-    ]
-    while True:
-        glClear(GL_COLOR_BUFFER_BIT)
-        dibujar_tablero(tablero_prueba)  # Dibujar el tablero de prueba
-        pygame.display.flip()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-
-if __name__ == "__main__":
-    main()

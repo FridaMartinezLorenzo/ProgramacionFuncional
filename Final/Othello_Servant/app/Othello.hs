@@ -47,10 +47,6 @@ sust coord tipo (x:xs)
   | fst x == coord = (coord, tipo) : xs
   | otherwise      = x : sust coord tipo xs
 
--- Retornar una matriz de 8x8 con las fichas como cadenas de texto
-getTablero :: [(Int, TipoCuadrado)] -> [[String]]
-getTablero tablero = 
-  map (map tipoCuadradoToString) (prepar8 (ordenarTablero tablero))
 
 -- Convertir TipoCuadrado a String
 tipoCuadradoToString :: TipoCuadrado -> String
@@ -70,7 +66,14 @@ mostrarTablero tablero =
     mostrarCuadro N = " N "
 
 --getTablero retorna unicamente una matriz de 8x8 con los valores de las fichas, pero las fichas como String
-
+getTablero :: [(Int, TipoCuadrado)] -> String
+getTablero tablero = 
+    intercalate "\n" $ map (concatMap mostrarCuadrado) (prepar8 (ordenarTablero tablero))
+  where
+    mostrarCuadrado :: TipoCuadrado -> String
+    mostrarCuadrado E = " . "
+    mostrarCuadrado B = " B "
+    mostrarCuadrado N = " N "
 
 -- Ordenar el tablero según las coordenadas
 ordenarTablero :: [(Int, TipoCuadrado)] -> [(Int, TipoCuadrado)]
@@ -120,6 +123,7 @@ posiblesTiradas tipo tablero =
   in 
     --trace ("Posibles tiradas para " ++ show tipo ++ ": " ++ show posibles) 
   posibles
+
 
 
 -- Verificar si una casilla puede encerrar fichas contrarias
