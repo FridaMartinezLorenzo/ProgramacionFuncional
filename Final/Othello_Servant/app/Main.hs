@@ -15,6 +15,7 @@ import Control.Exception (evaluate, try, SomeException)
 
 -- Importar el código del juego
 import Othello
+import Othello (getOpuesto)
 
 -- Tipos para interactuar con la API
 data JugadaRequest = JugadaRequest
@@ -110,7 +111,8 @@ realizarJugadaAleatoria estadoJuego (JugadaRequest pos jugadorStr) = do
           Left _ -> return ((tablero, turno), TableroResponse (getTablero tablero) "Error al ejecutar la jugada aleatoria")
           Right nuevoTablero -> do
             -- Cambiar el turno al jugador opuesto
-            let nuevoTurno = getOpuesto turno
+            --let nuevoTurno = N
+            let nuevoTurno = getOpuesto tipo
             -- Devolver el nuevo estado del tablero y el turno
             return ((nuevoTablero, nuevoTurno), TableroResponse (getTablero nuevoTablero) ("Turno de: " ++ show nuevoTurno))
             

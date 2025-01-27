@@ -20,7 +20,7 @@ INICIO_Y = 100
 # Inicialización de Pygame
 pygame.init()
 ANCHO = INICIO_X * 2.5 + TAM_TABLERO * TAM_CASILLA
-ALTO = INICIO_Y * 2.5 + TAM_TABLERO * TAM_CASILLA
+ALTO = INICIO_Y * 3 + TAM_TABLERO * TAM_CASILLA
 screen = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("Juego con Pygame y Servidor")
 
@@ -34,7 +34,7 @@ def generar_numeros_aleatorios():
         if num not in {14, 15, 21, 41, 74, 47, 44, 45, 54, 55}
     ]
     
-    return random.sample(arreglo, 4)
+    return random.sample(arreglo, 1)
 
 
 def obtener_blancas():
@@ -182,7 +182,6 @@ def realizar_jugadas_automáticas():
     posiciones_iniciales = generar_numeros_aleatorios()
     print("Posiciones iniciales generadas:", posiciones_iniciales)
     
-    # Suponiendo que el jugador es 'N' (negras)
     for posicion in posiciones_iniciales:
         estado = realizar_jugada_aleatoria(posicion, "N")
         if estado:
@@ -244,7 +243,7 @@ def main():
             screen.fill(VACIO)
             mostrar_mensaje(screen, "No se pudo obtener el estado del tablero. Saliendo...")
             pygame.display.flip()
-            pygame.time.wait(3000)  # Esperar 3 segundos antes de salir
+            pygame.time.wait(3000) 
             ejecutando = False
             continue
 
@@ -255,26 +254,74 @@ def main():
         blancas = obtener_blancas()  # Llamar a la función para obtener fichas blancas
         negras = obtener_negras()    # Llamar a la función para obtener fichas negras
 
+        # Verificar si el tablero está lleno (condición prioritaria)
+        if blancas + negras == 64:
+            ejecutando = False
+            screen.fill(VACIO)
+            dibujar_tablero(screen, tablero_actual) 
+            
+            # Mostrar el marcador (fichas blancas y negras)
+            font = pygame.font.Font(None, 36)
+            texto_marcador = font.render(f"Blancas: {blancas}  Negras: {negras}", True, NEGRO)
+            screen.blit(texto_marcador, (INICIO_X, INICIO_Y + TAM_TABLERO * TAM_CASILLA + 20))  # Justo arriba del turno
+            
+            if blancas > negras:
+                mostrar_mensaje(screen, "¡Blancas ganan! (Tablero lleno y más fichas)", y_offset=80)
+            elif negras > blancas:
+                mostrar_mensaje(screen, "¡Negras ganan! (Tablero lleno y más fichas)", y_offset=80)
+            else:
+                mostrar_mensaje(screen, "¡Empate! (Tablero lleno y fichas iguales)", y_offset=80)
+            pygame.display.flip()
+            pygame.time.wait(3000) 
+            continue
+
+        # Verificar si un jugador se queda sin movimientos
+        posibles_tiradas_blancas = obtener_posibles_tiradas("B")
+        posibles_tiradas_negras = obtener_posibles_tiradas("N")
+        turno_jugador = estado["turnoJugador"]
+
+
+        if turno_jugador == "N" and not posibles_tiradas_negras:
+            # Negras no tienen movimientos, Blancas ganan
+            ejecutando = False
+            screen.fill(VACIO)
+            dibujar_tablero(screen, tablero_actual) 
+            mostrar_mensaje(screen, "¡Blancas ganan! (Negras sin movimientos)", y_offset=80)
+            pygame.display.flip()
+            pygame.time.wait(3000) 
+            continue
+
+        if turno_jugador == "B" and not posibles_tiradas_blancas:
+            # Blancas no tienen movimientos, Negras ganan
+            ejecutando = False
+            screen.fill(VACIO)
+            dibujar_tablero(screen, tablero_actual) 
+            mostrar_mensaje(screen, "¡Negras ganan! (Blancas sin movimientos)", y_offset=80)
+            pygame.display.flip()
+            pygame.time.wait(3000) 
+            continue
+
         # Redibujar la pantalla
-        screen.fill(VACIO)  # Limpiar la pantalla
+        screen.fill(VACIO)
         dibujar_tablero(screen, tablero_actual)
 
         # Mostrar el marcador (fichas blancas y negras)
         font = pygame.font.Font(None, 36)
         texto_marcador = font.render(f"Blancas: {blancas}  Negras: {negras}", True, NEGRO)
-        screen.blit(texto_marcador, (INICIO_X, INICIO_Y + TAM_TABLERO * TAM_CASILLA + 20))  # Justo arriba del turno
+        screen.blit(texto_marcador, (INICIO_X, INICIO_Y + TAM_TABLERO * TAM_CASILLA + 20))
 
         # Mostrar el turno actual
-        turno_jugador = estado["turnoJugador"]
         if turno_jugador == "N":
             mostrar_mensaje(screen, f"Turno de Negras...", y_offset=40)
         elif turno_jugador == "B":
             mostrar_mensaje(screen, f"Turno de Blancas...", y_offset=40)
 
         if "Ganador" in turno_jugador:
+            screen.fill(VACIO)
+            dibujar_tablero(screen, tablero_actual) 
             mostrar_mensaje(screen, turno_jugador, y_offset=80)
             pygame.display.flip()
-            pygame.time.wait(3000)  # Esperar 3 segundos antes de salir
+            pygame.time.wait(3000) 
             ejecutando = False
             continue
 
@@ -288,7 +335,7 @@ def main():
                 if not estado:
                     mostrar_mensaje(screen, "Error al pasar el turno. Saliendo...", y_offset=80)
                     pygame.display.flip()
-                    pygame.time.wait(3000)  # Esperar 3 segundos antes de salir
+                    pygame.time.wait(3000) 
                     ejecutando = False
                 continue
 
@@ -315,7 +362,7 @@ def main():
             if not estado:
                 mostrar_mensaje(screen, "Error al realizar la jugada de la computadora. Saliendo...", y_offset=80)
                 pygame.display.flip()
-                pygame.time.wait(3000)  # Esperar 3 segundos antes de salir
+                pygame.time.wait(3000) 
                 ejecutando = False
 
         pygame.display.flip()  # Actualizar la pantalla

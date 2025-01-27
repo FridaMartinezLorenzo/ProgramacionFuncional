@@ -1,13 +1,6 @@
 module Othello where
-import System.IO (hFlush, stdout)
-import Data.List (intercalate)
-import Debug.Trace (trace)
-
-
-import Data.Char
 import Data.List
-import Text.Read (readMaybe)
-import Text.XHtml (table)
+
 
 data TipoCuadrado = E | B | N deriving (Eq, Show) -- Empty, Blanco, Negro
 data Jugador = JugadorBlanco | JugadorNegro deriving (Eq, Show)
@@ -155,7 +148,7 @@ obtenerTrayectoria inicio dir tablero tipo =
       fichas = map (`getValorCasilla` tablero) recorrido
       posiciones = zip recorrido fichas
       (opuestas, resto) = span (\(_, ficha) -> ficha == getOpuesto tipo) posiciones
-  in trace ("Inicio: " ++ show inicio ++ ", Dirección: " ++ show dir ++ ", Recorrido: " ++ show recorrido ++ ", Fichas: " ++ show fichas ++ ", Opuestas: " ++ show opuestas) $
+  in ---trace ("Inicio: " ++ show inicio ++ ", Dirección: " ++ show dir ++ ", Recorrido: " ++ show recorrido ++ ", Fichas: " ++ show fichas ++ ", Opuestas: " ++ show opuestas) $
      if not (null resto) && snd (head resto) == tipo
      then map fst opuestas
      else []
@@ -230,6 +223,7 @@ ejecutarTiradaAleatoria pos tablero tipo
 --Dale prioridad a llegar a las esquinas, en caso de pover tener el 11,18, 81 ó 88
 --evita los 3 cuadros que rodean las esquinas del 11 sería el 12, 21 y 22 ; del 18 serian el 17,27,28 : del 81 sería el 71,72,82 y del 88 sería el 77,78,87 
 --Intenta llegar y tomar tambien los bordes del tablero, en caso de poder tener el 13, 14, 15, 16, 23, 24, 25, 26, 31, 32, 36, 37, 43, 47, 53, 57, 63, 64, 65, 66, 73, 74, 75, 76, 83, 84, 85, 86
+-- En caso de que todos tengan el mismo peso va a llamar al algoritmo minmax poda alfa beta
 -- Heurística para evaluar las posibles jugadas
 evaluarJugada :: Int -> Int
 evaluarJugada pos
@@ -243,10 +237,35 @@ evaluarJugada pos
   -- Otras posiciones tienen prioridad base
   | otherwise = 10
 
--- Elegir la mejor jugada basándose en la heurística
+-- Función para evaluar el estado del juego (simplificada)
+evaluarEstado :: [Int] -> Int
+evaluarEstado tablero = sum [evaluarJugada pos | pos <- tablero]
+
+-- Algoritmo Minimax con poda alfa-beta
+minimax :: [Int] -> Int -> Int -> Int -> Bool -> Int
+minimax tablero profundidad alfa beta esMaximizador
+  | profundidad == 0 || null (movimientosPosibles tablero) = evaluarEstado tablero
+  | esMaximizador = maximizar tablero profundidad alfa beta
+  | otherwise = minimizar tablero profundidad alfa beta
+  where
+    maximizar tablero profundidad alfa beta = foldl' (\val pos -> max val (minimax (pos:tablero) (profundidad - 1) alfa beta False)) (-1000) (movimientosPosibles tablero)
+    minimizar tablero profundidad alfa beta = foldl' (\val pos -> min val (minimax (pos:tablero) (profundidad - 1) alfa beta True)) 1000 (movimientosPosibles tablero)
+
+-- Función para obtener los movimientos posibles (simplificada)
+movimientosPosibles :: [Int] -> [Int]
+movimientosPosibles tablero = filter (`notElem` tablero) [11..88]
+
+-- Elegir la mejor jugada basándose en la heurística o Minimax
 mejorJugada :: [Int] -> Int
-mejorJugada posiblesTiradas =
-  snd $ maximum [(evaluarJugada pos, pos) | pos <- posiblesTiradas]
+mejorJugada posiblesTiradas
+  | todosIguales (map evaluarJugada posiblesTiradas) = snd $ maximum [(minimax [pos] 3 (-1000) 1000 True, pos) | pos <- posiblesTiradas]
+  | otherwise = snd $ maximum [(evaluarJugada pos, pos) | pos <- posiblesTiradas]
+  where
+    todosIguales :: [Int] -> Bool
+    todosIguales [] = True
+    todosIguales (x:xs) = all (== x) xs
+
+
 
 -- Función para que la computadora elija la posición que ha de jugar
 elegirJugadaComputadora :: [(Int, TipoCuadrado)] -> TipoCuadrado -> IO Int
@@ -263,72 +282,7 @@ elegirJugadaComputadora tablero tipo = do
       putStrLn $ "La computadora (Blanco) elige la posición: " ++ show posSeleccionada
       return posSeleccionada  -- Devolver la posición seleccionada
 
---Funcion para que se realice la jugada de la computadora
----realizarJugadaComputadora :: [(Int, TipoCuadrado)] -> TipoCuadrado -> IO [(Int, TipoCuadrado)]
----realizarJugadaComputadora tablero tipo = do
----  putStrLn "La computadora (Blanco) está calculando su jugada..."
----  let posibles = posiblesTiradas tipo tablero
----      posiblesValidas = filter (\pos -> puedeEncerrar pos tipo tablero) posibles
----  if null posiblesValidas
----    then do
----      putStrLn "La computadora no tiene jugadas válidas. Pasa el turno."
----      return tablero  -- No hay cambios en el tablero
----    else do
----      let posSeleccionada = mejorJugada posiblesValidas  -- Elegir la mejor jugada válida
----      putStrLn $ "La computadora (Blanco) elige la posición: " ++ show posSeleccionada
----      return (ejecutarTirada posSeleccionada tablero tipo)  -- Ejecutar la jugada y devolver el nuevo tablero
 
 
--- Función principal del juego
---main :: IO ()
---main = do
---  juego tableroInicial N -- Empieza el juego con la ficha Negra (N)
 
--- Función que maneja el juego en sí, alternando entre jugadores
-juego :: [(Int, TipoCuadrado)] -> TipoCuadrado -> IO ()
-juego tablero tipo = do
-    putStrLn "Tablero actual:"
-    putStrLn (mostrarTablero tablero)  -- Usamos tu función para mostrar el tablero
 
-    let posibles = posiblesTiradas tipo tablero -- Obtener las posibles jugadas
-
-    -- Si no hay jugadas posibles, termina el turno y pasa al otro jugador
-    if null posibles
-        then do
-            putStrLn $ "No hay jugadas posibles para el jugador " ++ show tipo ++ ". Pasa el turno."
-            let siguienteJugador = getOpuesto tipo
-            juego tablero siguienteJugador
-        else do
-            if tipo == N  -- Turno del usuario
-                then do
-                    putStrLn "Posibles posiciones para realizar la jugada: "
-                    print posibles -- Mostrar todas las posiciones posibles
-
-                    putStrLn "Selecciona una posición para hacer tu jugada (número de casilla): "
-                    hFlush stdout  -- Asegurar que el mensaje se imprima antes de esperar entrada
-                    input <- getLine
-                    let posSeleccionada = read input :: Int
-
-                    -- Si la jugada es válida, ejecutamos la tirada
-                    if posSeleccionada `elem` posibles
-                        then do
-                            let nuevoTablero = ejecutarTirada posSeleccionada tablero tipo
-                            let siguienteJugador = getOpuesto tipo
-                            juego nuevoTablero siguienteJugador
-                        else do
-                            putStrLn "Posición no válida, intenta nuevamente."
-                            juego tablero tipo
-                else do  -- Turno de la computadora (Blanco)
-                    putStrLn "La computadora (Blanco) está calculando su jugada..."
-                    let posiblesValidas = filter (\pos -> puedeEncerrar pos tipo tablero) posibles
-                    if null posiblesValidas
-                        then do
-                            putStrLn "La computadora no tiene jugadas válidas. Pasa el turno."
-                            let siguienteJugador = getOpuesto tipo
-                            juego tablero siguienteJugador
-                        else do
-                            let posSeleccionada = mejorJugada posiblesValidas -- Elegir la mejor jugada válida
-                            putStrLn $ "La computadora (Blanco) elige la posición: " ++ show posSeleccionada
-                            let nuevoTablero = ejecutarTirada posSeleccionada tablero tipo
-                            let siguienteJugador = getOpuesto tipo
-                            juego nuevoTablero siguienteJugador
