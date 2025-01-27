@@ -1,5 +1,6 @@
 import pygame
 import requests
+import random
 
 # URL base del servidor Haskell
 BASE_URL = "http://localhost:8080"
@@ -22,6 +23,19 @@ ANCHO = INICIO_X * 2.5 + TAM_TABLERO * TAM_CASILLA
 ALTO = INICIO_Y * 2.5 + TAM_TABLERO * TAM_CASILLA
 screen = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("Juego con Pygame y Servidor")
+
+import random
+
+def generar_numeros_aleatorios():
+    # Crear el arreglo excluyendo los números dados
+    arreglo = [
+        num for rango in [(11, 18), (21, 28), (31, 38), (41, 48), (51, 58), (61, 68), (71, 78), (81, 88)]
+        for num in range(rango[0], rango[1] + 1)
+        if num not in {14, 15, 21, 41, 74, 47, 44, 45, 54, 55}
+    ]
+    
+    return random.sample(arreglo, 4)
+
 
 def obtener_blancas():
     try:
@@ -62,9 +76,22 @@ def realizar_jugada(posicion, jugador):
         print(f"Error al realizar la jugada: {e}")
         return None
 
+def realizar_jugada_aleatoria(posicion, jugador):
+    """Realiza una jugada en el servidor, para la lista de numeros aleatorios"""
+    try:
+        data = {"posicion": posicion, "jugador": jugador}
+        response = requests.post(f"{BASE_URL}/jugada_aleatoria", json=data)
+        response.raise_for_status()  # Lanza una excepción si la respuesta no es 200
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error al realizar la jugada: {e}")
+        return None
+
 def reiniciar_tablero():
     """Reinicia el tablero en el servidor."""
     try:
+        # Enviar la solicitud para reiniciar el tablero con las posiciones iniciales
+        #response = requests.post(f"{BASE_URL}/reiniciar", json=posiciones_iniciales)
         response = requests.post(f"{BASE_URL}/reiniciar")
         response.raise_for_status()  # Lanza una excepción si la respuesta no es 200
         return response.json()
@@ -150,6 +177,20 @@ def mostrar_mensaje(screen, mensaje, y_offset=0, color=BLANCO):
     texto_render = font.render(mensaje, True, color)
     screen.blit(texto_render, (INICIO_X, INICIO_Y + TAM_TABLERO * TAM_CASILLA + 20 + y_offset))
 
+def realizar_jugadas_automáticas():
+    """Realiza jugadas automáticas utilizando las posiciones aleatorias generadas."""
+    posiciones_iniciales = generar_numeros_aleatorios()
+    print("Posiciones iniciales generadas:", posiciones_iniciales)
+    
+    # Suponiendo que el jugador es 'N' (negras)
+    for posicion in posiciones_iniciales:
+        estado = realizar_jugada_aleatoria(posicion, "N")
+        if estado:
+            print(f"Jugada realizada en la posición {posicion}")
+        else:
+            print(f"Error al realizar la jugada en la posición {posicion}")
+
+
 def main():
     clock = pygame.time.Clock()
     ejecutando = True
@@ -162,7 +203,9 @@ def main():
     screen.fill(VACIO)
     mostrar_mensaje(screen, "Reiniciando el tablero...")
     pygame.display.flip()
-    reiniciar_tablero()
+    reiniciar_tablero()  
+
+    realizar_jugadas_automáticas()
 
     while ejecutando:
         for event in pygame.event.get():
@@ -279,6 +322,6 @@ def main():
         clock.tick(30)  # Limitar la velocidad de fotogramas
 
     pygame.quit()
-
+    
 if __name__ == "__main__":
     main()

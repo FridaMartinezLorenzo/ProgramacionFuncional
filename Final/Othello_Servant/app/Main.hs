@@ -36,9 +36,11 @@ type API =
   :<|> "jugada" :> ReqBody '[JSON] JugadaRequest :> Post '[JSON] TableroResponse
   :<|> "reiniciar" :> Post '[JSON] TableroResponse
   :<|> "posibles_tiradas" :> ReqBody '[JSON] String :> Post '[JSON] [Int]
-  :<|> "jugada_computadora" :> Post '[JSON] TableroResponse  -- Nuevo endpoint para la jugada de la computadora
-  :<|> "blancas" :> Get '[JSON] Int  -- Nuevo endpoint para obtener fichas blancas
-  :<|> "negras" :> Get '[JSON] Int   -- Nuevo endpoint para obtener fichas negras
+  :<|> "jugada_computadora" :> Post '[JSON] TableroResponse  
+  :<|> "blancas" :> Get '[JSON] Int  
+  :<|> "negras" :> Get '[JSON] Int   
+  :<|> "jugada_aleatoria" :> ReqBody '[JSON] JugadaRequest :> Post '[JSON] TableroResponse 
+
 
 -- Estado global del juego (tablero y turno)
 tipoInicial :: TipoCuadrado
@@ -88,12 +90,35 @@ stringToTipoCuadrado "N" = N
 stringToTipoCuadrado "B" = B
 stringToTipoCuadrado _ = error "Tipo de jugador no válido. Debe ser 'N' o 'B'."
 
+-- Función para ejecutar una tirada aleatoria a partir de un String
+ejecutarTiradaAleatoriaString :: Int -> [(Int, TipoCuadrado)] -> String -> IO [(Int, TipoCuadrado)]
+ejecutarTiradaAleatoriaString pos tablero jugadorStr = do
+  let tipo = stringToTipoCuadrado jugadorStr  -- Convertir el String a TipoCuadrado
+  return $ ejecutarTiradaAleatoria pos tablero tipo  -- Ejecutar la tirada aleatoria
 
+-- Realizar una jugada aleatoria
+realizarJugadaAleatoria :: MVar ([(Int, TipoCuadrado)], TipoCuadrado) -> JugadaRequest -> Handler TableroResponse
+realizarJugadaAleatoria estadoJuego (JugadaRequest pos jugadorStr) = do
+  let tipo = stringToTipoCuadrado jugadorStr  -- Convertir el String a TipoCuadrado
+  liftIO $ modifyMVar estadoJuego $ \(tablero, turno) ->
+    if turno /= tipo
+      then return ((tablero, turno), TableroResponse (getTablero tablero) ("No es tu turno: " ++ show turno))
+      else do
+        -- Ejecutar la jugada aleatoria usando evaluate para manejar excepciones
+        resultado <- try (evaluate (ejecutarTiradaAleatoria pos tablero tipo)) :: IO (Either SomeException [(Int, TipoCuadrado)])
+        case resultado of
+          Left _ -> return ((tablero, turno), TableroResponse (getTablero tablero) "Error al ejecutar la jugada aleatoria")
+          Right nuevoTablero -> do
+            -- Cambiar el turno al jugador opuesto
+            let nuevoTurno = getOpuesto turno
+            -- Devolver el nuevo estado del tablero y el turno
+            return ((nuevoTablero, nuevoTurno), TableroResponse (getTablero nuevoTablero) ("Turno de: " ++ show nuevoTurno))
+            
 -- Función para ejecutar una tirada a partir de un String
 ejecutarTiradaString :: Int -> [(Int, TipoCuadrado)] -> String -> [(Int, TipoCuadrado)]
 ejecutarTiradaString pos tablero jugadorStr =
-  let tipo = stringToTipoCuadrado jugadorStr  -- Convertir el String a TipoCuadrado
-  in ejecutarTirada pos tablero tipo  -- Llamar a ejecutarTirada
+  let tipo = stringToTipoCuadrado jugadorStr 
+  in ejecutarTirada pos tablero tipo 
 
 -- Realizar una jugada
 realizarJugada :: MVar ([(Int, TipoCuadrado)], TipoCuadrado) -> JugadaRequest -> Handler TableroResponse
@@ -150,8 +175,9 @@ servidor estadoJuego = obtenerEstado estadoJuego
                :<|> reiniciarTablero estadoJuego
                :<|> posiblesTiradasHandler estadoJuego
                :<|> realizarJugadaComputadora estadoJuego 
-               :<|> obtenerBlancas estadoJuego  -- Nuevo manejador para fichas blancas
-               :<|> obtenerNegras estadoJuego   -- Nuevo manejador para fichas negras
+               :<|> obtenerBlancas estadoJuego
+               :<|> obtenerNegras estadoJuego  
+               :<|> realizarJugadaAleatoria estadoJuego
   where
     -- Manejador para el endpoint "posibles_tiradas"
     posiblesTiradasHandler :: MVar ([(Int, TipoCuadrado)], TipoCuadrado) -> String -> Handler [Int]

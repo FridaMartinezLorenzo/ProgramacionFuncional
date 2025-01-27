@@ -18,13 +18,13 @@ tablero = [10 * i + j | i <- [1..8], j <- [1..8]]
 
 -- Tablero inicial
 tableroInicial :: [(Int, TipoCuadrado)]
-tableroInicial = [(11,E),(12,E),(13,E),(14,E),(15,E),(16,E),(17,E),(18,E),
-                  (21,E),(22,E),(23,E),(24,E),(25,E),(26,E),(27,E),(28,E),
+tableroInicial = [(11,E),(12,E),(13,E),(14,B),(15,N),(16,E),(17,E),(18,E),
+                  (21,B),(22,E),(23,E),(24,E),(25,E),(26,E),(27,E),(28,E),
                   (31,E),(32,E),(33,E),(34,E),(35,E),(36,E),(37,E),(38,E),
-                  (41,E),(42,E),(43,E),(44,B),(45,N),(46,E),(47,E),(48,E),
+                  (41,B),(42,E),(43,E),(44,B),(45,N),(46,E),(47,N),(48,E),
                   (51,E),(52,E),(53,E),(54,N),(55,B),(56,E),(57,E),(58,E),
                   (61,E),(62,E),(63,E),(64,E),(65,E),(66,E),(67,E),(68,E),
-                  (71,E),(72,E),(73,E),(74,E),(75,E),(76,E),(77,E),(78,E),
+                  (71,E),(72,E),(73,E),(74,N),(75,E),(76,E),(77,E),(78,E),
                   (81,E),(82,E),(83,E),(84,E),(85,E),(86,E),(87,E),(88,E)]
 
 
@@ -192,6 +192,37 @@ ejecutarTirada pos tablero tipo
     voltear :: [(Int, TipoCuadrado)] -> [Int] -> [(Int, TipoCuadrado)]
     voltear tablero trayectoria = foldl (\t pos -> sust pos tipo t) tablero trayectoria
 
+-- Función para ejecutar una tirada aleatoria, colocando la ficha en la posición deseada
+-- sin verificar si es una jugada válida. Si la jugada es válida, voltea las fichas correspondientes.
+ejecutarTiradaAleatoria :: Int -> [(Int, TipoCuadrado)] -> TipoCuadrado -> [(Int, TipoCuadrado)]
+ejecutarTiradaAleatoria pos tablero tipo
+  | not (coordenadasDentroDelTablero pos) = error "La posición está fuera del tablero"
+  | getValorCasilla pos tablero /= E      = error "La casilla no está vacía"
+  | otherwise = 
+      let trayectorias = fichasAVoltear pos tablero tipo
+          nuevoTablero = foldl voltear (sust pos tipo tablero) trayectorias
+      in nuevoTablero
+  where
+    -- Encontrar las fichas que deben ser volteadas
+    fichasAVoltear :: Int -> [(Int, TipoCuadrado)] -> TipoCuadrado -> [[Int]]
+    fichasAVoltear pos tablero tipo =
+      [trayectoria | dir <- direccionesVecinos, 
+                     let trayectoria = obtenerTrayectoria pos dir tablero tipo, 
+                     not (null trayectoria)]
+
+    -- Obtener trayectoria de fichas a voltear en una dirección
+    obtenerTrayectoria :: Int -> Int -> [(Int, TipoCuadrado)] -> TipoCuadrado -> [Int]
+    obtenerTrayectoria inicio dir tablero tipo =
+      let recorrido = takeWhile coordenadasDentroDelTablero [inicio + n * dir | n <- [1..]]
+          fichas = map (`getValorCasilla` tablero) recorrido
+          (opuestas, resto) = span (== getOpuesto tipo) fichas
+      in if not (null resto) && head resto == tipo
+         then take (length opuestas) recorrido
+         else []
+
+    -- Voltear las fichas en el tablero
+    voltear :: [(Int, TipoCuadrado)] -> [Int] -> [(Int, TipoCuadrado)]
+    voltear tablero trayectoria = foldl (\t pos -> sust pos tipo t) tablero trayectoria
 
 -- Heuristica, en base a que te va a contestar la compu
 
