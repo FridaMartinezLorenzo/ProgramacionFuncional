@@ -110,6 +110,13 @@ getValorCasilla pos ((p, tipo):xs)
   | otherwise = getValorCasilla pos xs
 
 
+-- Obtener el número de fichas blancas que hay en el tablero
+getBlancas :: [(Int, TipoCuadrado)] -> Int
+getBlancas tablero = length $ filter (\(_, tipo) -> tipo == B) tablero
+
+-- Obtener el número de fichas negras que hay en el tablero
+getNegras :: [(Int, TipoCuadrado)] -> Int
+getNegras tablero = length $ filter (\(_, tipo) -> tipo == N) tablero
 -- Verificar si una coordenada está dentro del tablero
 coordenadasDentroDelTablero :: Int -> Bool
 coordenadasDentroDelTablero pos = pos >= 11 && pos <= 88 && (pos `mod` 10) /= 0 && (pos `mod` 10) /= 9
@@ -224,7 +231,7 @@ elegirJugadaComputadora tablero tipo = do
       let posSeleccionada = mejorJugada posiblesValidas  -- Elegir la mejor jugada válida
       putStrLn $ "La computadora (Blanco) elige la posición: " ++ show posSeleccionada
       return posSeleccionada  -- Devolver la posición seleccionada
-      
+
 --Funcion para que se realice la jugada de la computadora
 ---realizarJugadaComputadora :: [(Int, TipoCuadrado)] -> TipoCuadrado -> IO [(Int, TipoCuadrado)]
 ---realizarJugadaComputadora tablero tipo = do

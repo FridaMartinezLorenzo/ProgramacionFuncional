@@ -37,6 +37,8 @@ type API =
   :<|> "reiniciar" :> Post '[JSON] TableroResponse
   :<|> "posibles_tiradas" :> ReqBody '[JSON] String :> Post '[JSON] [Int]
   :<|> "jugada_computadora" :> Post '[JSON] TableroResponse  -- Nuevo endpoint para la jugada de la computadora
+  :<|> "blancas" :> Get '[JSON] Int  -- Nuevo endpoint para obtener fichas blancas
+  :<|> "negras" :> Get '[JSON] Int   -- Nuevo endpoint para obtener fichas negras
 
 -- Estado global del juego (tablero y turno)
 tipoInicial :: TipoCuadrado
@@ -62,6 +64,17 @@ main = do
   putStrLn "Servidor corriendo en http://localhost:8080"
   run 8080 (serve (Proxy :: Proxy API) (servidor estadoJuego))
 
+-- Obtener el número de fichas blancas
+obtenerBlancas :: MVar ([(Int, TipoCuadrado)], TipoCuadrado) -> Handler Int
+obtenerBlancas estadoJuego = do
+  (tablero, _) <- liftIO $ readMVar estadoJuego
+  return $ getBlancas tablero
+
+-- Obtener el número de fichas negras
+obtenerNegras :: MVar ([(Int, TipoCuadrado)], TipoCuadrado) -> Handler Int
+obtenerNegras estadoJuego = do
+  (tablero, _) <- liftIO $ readMVar estadoJuego
+  return $ getNegras tablero
 
 -- Obtener el estado actual del juego
 obtenerEstado :: MVar ([(Int, TipoCuadrado)], TipoCuadrado) -> Handler TableroResponse
@@ -136,7 +149,9 @@ servidor estadoJuego = obtenerEstado estadoJuego
                :<|> realizarJugada estadoJuego
                :<|> reiniciarTablero estadoJuego
                :<|> posiblesTiradasHandler estadoJuego
-                :<|> realizarJugadaComputadora estadoJuego 
+               :<|> realizarJugadaComputadora estadoJuego 
+               :<|> obtenerBlancas estadoJuego  -- Nuevo manejador para fichas blancas
+               :<|> obtenerNegras estadoJuego   -- Nuevo manejador para fichas negras
   where
     -- Manejador para el endpoint "posibles_tiradas"
     posiblesTiradasHandler :: MVar ([(Int, TipoCuadrado)], TipoCuadrado) -> String -> Handler [Int]
