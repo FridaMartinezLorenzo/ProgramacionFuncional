@@ -1,4 +1,4 @@
-module Othello where
+module Final.Othello_Servant.Othello where
 import Data.List
 
 
@@ -12,13 +12,15 @@ tablero = [10 * i + j | i <- [1..8], j <- [1..8]]
 -- Tablero inicial
 tableroInicial :: [(Int, TipoCuadrado)]
 tableroInicial = [(11,E),(12,E),(13,E),(14,B),(15,N),(16,E),(17,E),(18,E),
-                  (21,B),(22,E),(23,E),(24,E),(25,E),(26,E),(27,E),(28,E),
-                  (31,E),(32,E),(33,E),(34,E),(35,E),(36,E),(37,E),(38,E),
+                  (21,E),(22,E),(23,E),(24,E),(25,E),(26,E),(27,E),(28,E),
+                  (31,E),(32,B),(33,E),(34,E),(35,E),(36,E),(37,E),(38,E),
                   (41,B),(42,E),(43,E),(44,B),(45,N),(46,E),(47,N),(48,E),
                   (51,E),(52,E),(53,E),(54,N),(55,B),(56,E),(57,E),(58,E),
                   (61,E),(62,E),(63,E),(64,E),(65,E),(66,E),(67,E),(68,E),
                   (71,E),(72,E),(73,E),(74,N),(75,E),(76,E),(77,E),(78,E),
                   (81,E),(82,E),(83,E),(84,E),(85,E),(86,E),(87,E),(88,E)]
+
+
 
 
 -- Crear el tablero inicial con las fichas en el centro

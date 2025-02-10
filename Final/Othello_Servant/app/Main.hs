@@ -15,7 +15,6 @@ import Control.Exception (evaluate, try, SomeException)
 
 -- Importar el código del juego
 import Othello
-import Othello (getOpuesto)
 
 -- Tipos para interactuar con la API
 data JugadaRequest = JugadaRequest
